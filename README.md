@@ -20,8 +20,6 @@ Start the development server with Hot Module Replacement (HMR):
 npm run dev
 ```
 
-The application will be available at [http://localhost:5173/](http://localhost:5173/). Any changes you save will automatically refresh the browser.
-
 ## 🛠️ Project Setup Details
 
 - **Framework**: Vue 2.7 (Legacy version for educational purposes).
