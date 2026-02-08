@@ -57,7 +57,7 @@ template: \`
     <h2>Title: {{title}}</h2>
     <p>{{ body }}</p>
     <ul>
-        <li v-for="todo in todos">
+        <li v-for="todo in todos">1
             {{ todo.text }}
         </li>
     </ul>
@@ -91,15 +91,31 @@ Article
 });`;
 
             const highlightCode = (code) => {
-                return code
+                const escaped = code
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/\b(const|let|var|import|from|new|return|function|export|default)\b/g, '<span class="text-pink-400">$1</span>')
-                    .replace(/\b(Vue|Article|app)\b/g, '<span class="text-yellow-200">$1</span>')
-                    .replace(/('.*?'|".*?"|`[\s\S]*?`)/g, '<span class="text-emerald-400">$1</span>')
-                    .replace(/\b(template|data|props|el|components|v-for|id|text|completed|title|todos)\b/g, '<span class="text-blue-300">$1</span>')
-                    .replace(/\/\/.*/g, '<span class="text-slate-500">$0</span>');
+                    .replace(/>/g, "&gt;");
+
+                // Use a single regex with groups to avoid nested replacements that break Tailwind classes
+                const tokens = [
+                    { cls: 'text-slate-500', reg: /\/\/.*/ },                                                   // Comments
+                    { cls: 'text-emerald-400', reg: /('.*?'|".*?"|`[\s\S]*?`)/ },                               // Strings
+                    { cls: 'text-pink-400', reg: /\b(const|let|var|import|from|new|return|function|export|default)\b/ }, // Keywords
+                    { cls: 'text-yellow-200', reg: /\b(Vue|Article|app)\b/ },                                   // Special
+                    { cls: 'text-blue-300', reg: /\b(template|data|props|el|components|v-for|id|text|completed|title|todos)\b/ } // Properties
+                ];
+
+                const combinedRegex = new RegExp(tokens.map(t => `(${t.reg.source})`).join('|'), 'g');
+
+                return escaped.replace(combinedRegex, (...args) => {
+                    const match = args[0];
+                    for (let i = 0; i < tokens.length; i++) {
+                        if (args[i + 1] !== undefined) {
+                            return `<span class="${tokens[i].cls}">${match}</span>`;
+                        }
+                    }
+                    return match;
+                });
             };
 
             const playSound = (type) => {
